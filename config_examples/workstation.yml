@@ -1,5 +1,5 @@
 # To create workstation, run:
-# scaletorch login -k <api_key>
+# scaletorch login -ki <access_key_id> -ks <access_key_secret>
 # scaletorch ws create -c workstation.yml
 
 # Name of the workstation - [Optional]
@@ -20,8 +20,10 @@ minMemory: 4
 # maxCPUWorkers cannot be non-zero when gpuCount is non-zero
 maxCPUWorkers: 0
 
-# To store the artifacts (files,checkpoints) to be saved for a workstation - [Default=True]
-saveArtifacts: True
+# Artifacts Storage that was registered with the platform - [Optional]
+artifactsDestination:
+  name: s3-store
+  filter: "**" # glob-like filter to select what artifacts need to be stored  [Optional]
 
 # Creates a bare workstation with no dependencies or jupyter lab session when set to true - [Default=False]
 bareBone: False
@@ -42,7 +44,7 @@ gpuTypes:
   - K80
 
 # How many workstations needed with the current config - [Default=1]
-numWorkstations: int = 1
+numWorkstations: 1
 
 # Choose type of visualisation between TENSORBOARD and AIM - [Optional]
 visualisation: TENSORBOARD

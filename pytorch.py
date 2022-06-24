@@ -1,3 +1,4 @@
+import argparse
 import io
 import time
 
@@ -7,11 +8,14 @@ import torch.nn as nn
 import torchvision.transforms as t
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
+from torch.utils.tensorboard import SummaryWriter
 from torchvision.models import resnet50
 import glob
 
+
 # Import scaletorch and intialize
 import scaletorch as st
+from tqdm import tqdm
 st.init()
 
 
@@ -35,18 +39,22 @@ def accuracy(preds, trues):
 
 class ImageDataset(Dataset):
     def __init__(self, transforms=None):
+        print("Loading dataset")
+
         super().__init__()
         self.transforms = transforms
         # self.imgs = glob.glob('./data/**')
-        self.imgs = st.list_files('s3://stfs-test/xray-dataset') # List files from S3 or any other source
-
+        self.imgs = st.list_files('s3://st-datasets/xray-dataset', "**/*.jpeg") # List files from S3 or any other source
+        self.imgs = self.imgs[:5] # Just for quick demonstration
 
     def __getitem__(self, idx):
         
         image_name = self.imgs[idx]
+        print(f'Downloading {image_name}')
         
         with st.open(f's3://{image_name}', 'rb') as file:
             img = Image.open(io.BytesIO(file.read()))
+            
         img = img.resize((224, 224)).convert('RGB')
 
         # Preparing class label
@@ -62,7 +70,7 @@ class ImageDataset(Dataset):
         return len(self.imgs)
 
 
-def main():
+def main(args):
     train_dataset = ImageDataset(transforms=get_train_transform())
 
     train_data_loader = DataLoader(
@@ -84,17 +92,18 @@ def main():
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
     criterion = nn.BCELoss()
-    epochs = 1
+    epochs = args.epochs
     model.to(device)
 
     print('Training has begun...')
+    writer = SummaryWriter(f'{st.get_artifacts_dir()}/tensorboard')
     for epoch in range(epochs):
 
         epoch_loss = []
         epoch_acc = []
         start_time = time.time()
 
-        for images, labels in train_data_loader:
+        for images, labels in tqdm(train_data_loader):
             images = images.to(device)
             labels = labels.to(device)
             labels = labels.reshape((labels.shape[0], 1))  # [N, 1] - to match with preds shape
@@ -124,8 +133,11 @@ def main():
         loss = np.mean(epoch_loss)
         acc = np.mean(epoch_acc)
 
-        if epoch % 3 == 0:
-            st.torch.save(model.state_dict(), "model.pth", metadata={'epoch' : 5, 'loss': loss, 'acc' : acc})
+        writer.add_scalar('loss', loss, epoch)
+        writer.add_scalar('acc', acc, epoch)
+
+
+        st.torch.save(model.state_dict(), "model.pth", metadata={'epoch' : 5, 'loss': loss, 'acc' : acc})
         
         print(f"Epoch: {epoch + 1} | Loss: {loss} | Acc: {acc} | Time: {total_time} ")
         st.track(epoch=epoch, 
@@ -133,5 +145,11 @@ def main():
                     tuner_default='loss')
 
 
+    writer.close()
+
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--epochs', default=1, type=int)
+
+    args = parser.parse_args()
+    main(args)
