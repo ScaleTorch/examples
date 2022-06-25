@@ -11,6 +11,28 @@ entrypoint: train.py
 # Name of the requirements file - [Optional]
 requirements: requirements.txt
 
+# Search space for Hyper Parameter Tuning. 
+# Note: These values will be sent to the entrypoint through argparse
+sweep:
+  searchSpace:
+    batch_size:
+      type: choice
+      value: [16, 32, 64, 128]
+    hidden_size:
+      type: choice
+      value: [128, 256, 512, 1024]
+    lr:
+      type: choice
+      value: [0.0001, 0.001, 0.01, 0.1]
+    momentum:
+      type: uniform
+      value: [0, 1]
+
+  tuner:                          
+    name: TPE                                     
+    optimizeMode: maximize     
+
+
 # A custom docker image to use with pre-built dependencies - [Optional]
 # Note: The working directory of the docker image should contain the entrypoint and requirements specified above
 customImage: 

@@ -5,6 +5,12 @@
 # Name of the workstation - [Optional]
 name: my-experiment
 
+# Arguments that you need to test upon.
+# Note: These values will be sent to the entrypoint through argparse
+experiment:
+  args:
+    epochs: [1]
+
 # Name of the training script  
 entrypoint: train.py
 

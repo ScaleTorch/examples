@@ -54,7 +54,7 @@ class ImageDataset(Dataset):
         
         with st.open(f's3://{image_name}', 'rb') as file:
             img = Image.open(io.BytesIO(file.read()))
-            
+
         img = img.resize((224, 224)).convert('RGB')
 
         # Preparing class label
@@ -80,7 +80,8 @@ def main(args):
         shuffle=True
     )
 
-    device = torch.device('cuda')
+    use_cuda = not args.no_cuda and torch.cuda.is_available()
+    device = torch.device("cuda" if use_cuda else "cpu")
 
     model = resnet50(pretrained=True)
 
@@ -150,6 +151,8 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', default=1, type=int)
+    parser.add_argument('--no_cuda', action='store_true', default=True,
+                        help='disables CUDA training')
 
     args = parser.parse_args()
     main(args)
