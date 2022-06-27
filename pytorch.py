@@ -45,7 +45,7 @@ class ImageDataset(Dataset):
         self.transforms = transforms
         # self.imgs = glob.glob('./data/**')
         self.imgs = st.list_files('s3://st-datasets/xray-dataset', "**/*.jpeg") # List files from S3 or any other source
-        self.imgs = self.imgs[:5] # Just for quick demonstration
+        self.imgs = self.imgs[:200] # Just for quick demonstration
 
     def __getitem__(self, idx):
         
@@ -76,7 +76,7 @@ def main(args):
     train_data_loader = DataLoader(
         dataset=train_dataset,
         num_workers=4,
-        batch_size=16,
+        batch_size=args.batch_size,
         shuffle=True
     )
 
@@ -90,7 +90,7 @@ def main(args):
         nn.Sigmoid()
     )
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
     criterion = nn.BCELoss()
     epochs = args.epochs
@@ -151,6 +151,9 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', default=1, type=int)
+    parser.add_argument('--batch_size', default=16, type=int)
+    parser.add_argument('--lr', default=0.0001, type=float)
+
     parser.add_argument('--no_cuda', action='store_true', default=True,
                         help='disables CUDA training')
 
