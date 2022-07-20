@@ -10,12 +10,12 @@ from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.models import resnet50
+from tqdm import tqdm
 import glob
 
 
 # Import scaletorch and intialize
 import scaletorch as st
-from tqdm import tqdm
 st.init()
 
 
@@ -44,8 +44,8 @@ class ImageDataset(Dataset):
         super().__init__()
         self.transforms = transforms
         # self.imgs = glob.glob('./data/**')
-        self.imgs = st.list_files('s3://st-datasets/xray-dataset', "**/*.jpeg") # List files from S3 or any other source
-        self.imgs = self.imgs[:200] # Just for quick demonstration
+        self.imgs = st.list_files('s3://st-datasets/xray-dataset', pattern="**/*.jpeg", withdirs=False) # List files from S3 or any other source
+        self.imgs = self.imgs[:100] # Just for quick demonstration
 
     def __getitem__(self, idx):
         
@@ -77,7 +77,8 @@ def main(args):
         dataset=train_dataset,
         num_workers=4,
         batch_size=args.batch_size,
-        shuffle=True
+        shuffle=True,
+        prefetch_factor=1
     )
 
     use_cuda = not args.no_cuda and torch.cuda.is_available()
