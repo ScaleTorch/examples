@@ -3,7 +3,7 @@
 # scaletorch ws create -c workstation.yml
 
 # Name of the workstation - [Optional]
-name: my-workstation
+# name: my-workstation
 
 # Name of the requirements file - [Optional]
 requirements: requirements.txt

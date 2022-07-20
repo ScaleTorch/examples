@@ -13,7 +13,7 @@ requirements: requirements.txt
 
 # Search space for Hyper Parameter Tuning. 
 # Note: These values will be sent to the entrypoint through argparse
-sweep:
+tuning:
   searchSpace:
     batch_size:
       type: choice

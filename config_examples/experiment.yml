@@ -10,6 +10,8 @@ name: my-experiment
 experiment:
   args:
     epochs: [1]
+    batch_size: [16, 34]
+    lr: [0.1, 0.01]
 
 # Name of the training script  
 entrypoint: train.py
@@ -41,10 +43,10 @@ codeTransfer:
   #   GITHUB_PAT: <Your Github PAT>
 
 # Number of GPUs needed for each trial - [Default=0]
-gpusPerTrial: 1
+gpusPerTrial: 4
 
 # Maximum number of GPUs that can be provsioned for this experiment - [Default=-1]
-maxGpus: 20
+maxGpus: 8
 
 # Minimum vCPUs and memory needed for the workstation - [Optional]
 minvCPUs: 4
