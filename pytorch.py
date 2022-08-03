@@ -81,7 +81,7 @@ def main(args):
         prefetch_factor=1
     )
 
-    use_cuda = not args.no_cuda and torch.cuda.is_available()
+    use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
 
     model = resnet50(pretrained=True)
