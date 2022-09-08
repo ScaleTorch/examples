@@ -38,14 +38,14 @@ def accuracy(preds, trues):
 
 
 class ImageDataset(Dataset):
-    def __init__(self, transforms=None):
+    def __init__(self, args, transforms=None):
         print("Loading dataset")
 
         super().__init__()
         self.transforms = transforms
         # self.imgs = glob.glob('./data/**')
         self.imgs = st.list_files('s3://st-datasets/xray-dataset', pattern="**/*.jpeg", withdirs=False) # List files from S3 or any other source
-        self.imgs = self.imgs[:100] # Just for quick demonstration
+        self.imgs = self.imgs[:args.files] # Just for quick demonstration
 
     def __getitem__(self, idx):
         
@@ -71,7 +71,7 @@ class ImageDataset(Dataset):
 
 
 def main(args):
-    train_dataset = ImageDataset(transforms=get_train_transform())
+    train_dataset = ImageDataset(args, transforms=get_train_transform())
 
     train_data_loader = DataLoader(
         dataset=train_dataset,
@@ -154,9 +154,7 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', default=1, type=int)
     parser.add_argument('--batch_size', default=16, type=int)
     parser.add_argument('--lr', default=0.0001, type=float)
-
-    parser.add_argument('--no_cuda', action='store_true', default=True,
-                        help='disables CUDA training')
+    parser.add_argument('--files', default=100, type=int)
 
     args = parser.parse_args()
     main(args)
