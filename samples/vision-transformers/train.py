@@ -22,6 +22,8 @@ from utils.scheduler import WarmupLinearSchedule, WarmupCosineSchedule
 from utils.data_utils import get_loader
 from utils.dist_util import get_world_size
 
+import scaletorch as st
+st.init()
 
 logger = logging.getLogger(__name__)
 
