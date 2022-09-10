@@ -3,4 +3,3 @@ numpy
 tqdm
 tensorboard
 ml-collections
-git+https://github.com/NVIDIA/apex.git
