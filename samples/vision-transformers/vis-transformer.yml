@@ -1,0 +1,61 @@
+# To create experiment, run:
+# scaletorch login -ki <access_key_id> -ks <access_key_secret>
+# scaletorch launch -c vis-transformer.yml
+
+experiment:
+  args:
+    name: ["cifar10-100_500"]
+    dataset: ["cifar10"]
+    model_type: ["ViT-B_16"]
+    pretrained_dir: ["/tmp/ViT-B_16.npz"]
+    eval_batch_size: [8]
+    num_steps: [500]
+
+# Name of the training script  
+entrypoint: train.py 
+
+# Name of the requirements file - [Optional]
+requirements: requirements.txt
+
+cloudProviders: 
+  - name: GCP
+    regions:
+    - us-central1
+  
+  - name: AWS
+    # regions:
+    # - us-east-1
+
+# What CUDA version to use - [Default=latest_cuda_cersion]
+# Note: CUDA version will be ignored in the case of CPU only workstations
+cuda: 10.2
+gpusPerTrial: 4
+minvCPUs: 16
+minMemory: 32
+maxGpus: 4
+gpuTypes: 
+ - V100
+#  - K80
+#  - A6000
+
+
+codeTransfer:
+  repo: https://github.com/ScaleTorch/examples.git
+  type: GITHUB
+  codeDir: samples/vision-transformers
+
+preJobCommands: 
+  - apt-get install curl -y
+  - curl -fL https://storage.googleapis.com/vit_models/imagenet21k/ViT-B_16.npz -o /tmp/ViT-B_16.npz
+  - git clone https://github.com/NVIDIA/apex
+  - cd apex; /root/.pyenv/shims/python3 setup.py install
+  - /root/.pyenv/shims/python3 -m pip install scipy torchvision
+
+
+# Utilize spot instances or not - [Default=False]
+useSpot: False
+
+# Artifacts Storage that was registered with the platform - [Optional]
+artifactsDestination:
+  name: gcs-store
+  filter: "**" # glob-like filter to select what artifacts need to be stored  [Optional] [Default="**"]
