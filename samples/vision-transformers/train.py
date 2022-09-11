@@ -222,6 +222,9 @@ def train(args, model):
                 if args.local_rank in [-1, 0]:
                     writer.add_scalar("train/loss", scalar_value=losses.val, global_step=global_step)
                     writer.add_scalar("train/lr", scalar_value=scheduler.get_lr()[0], global_step=global_step)
+
+                    st.track(epoch=global_step, metrics={"train/loss" : losses.val })
+
                 if global_step % args.eval_every == 0 and args.local_rank in [-1, 0]:
                     accuracy = valid(args, model, writer, test_loader, global_step)
                     if best_acc < accuracy:

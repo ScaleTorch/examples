@@ -1,0 +1,59 @@
+# To create experiment, run:
+# scaletorch login -ki <access_key_id> -ks <access_key_secret>
+# scaletorch launch -c experiment.yml
+
+experiment:
+  args:
+    epochs: [3, 4, 5, 6]
+    lr: [0.0001, 0.001, 0.1, 0.00001]
+    batch_size: [16, 34, 64, 128]
+
+# Name of the training script  
+entrypoint: pytorch.py
+
+# Name of the requirements file - [Optional]
+requirements: requirements.txt
+
+codeTransfer:
+  repo: https://github.com/ScaleTorch/examples.git
+  type: GITHUB
+  codeDir: samples/xray-classification
+
+# What CUDA version to use - [Default=latest_cuda_cersion]
+# Note: CUDA version will be ignored in the case of CPU only workstations
+cuda: 11.3
+gpusPerTrial: 1
+maxGpus: 64
+gpuTypes: 
+ - V100
+
+# Utilize spot instances or not - [Default=False]
+useSpot: False
+
+# Artifacts Storage that was registered with the platform - [Optional]
+artifactsDestination:
+  name: az-store
+  filter: "**" # glob-like filter to select what artifacts need to be stored  [Optional] [Default="**"]
+
+# Override what cloud providers and what GPU Types to be used for this workstation - [Optional] 
+# By default scaletorch looks for cheapest compute in all the registered cloud providers
+cloudProviders: 
+  - name: AWS
+    regions:
+    - us-east-1
+
+  - name: DATACRUNCH
+    regions:
+    - FIN1
+
+  - name: GCP
+    regions:
+    - us-central1
+    - europe-west4
+    - asia-east1
+  
+# Maximum cost in USD that the experiment cannot go beyond - [Optional]
+maxCost: 50
+
+# Maximum time that the experiment cannot go beyond - [Optional]
+maxTime: 1h

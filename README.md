@@ -1,6 +1,5 @@
 # examples
 
-An example project to demostrate ScaleTorch python package
+An example project to demostrate ScaleTorch platform
 
-## YAML config examples
-The examples for the YAML config can be found in the `config_examples` folder
+
