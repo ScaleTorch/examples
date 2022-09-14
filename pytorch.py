@@ -101,6 +101,10 @@ def main(args):
     writer = SummaryWriter(f'{st.get_artifacts_dir()}/tensorboard')
     for epoch in range(epochs):
 
+        if epoch == 12: # simulate idleness
+            print("NOW ENTERING INTO SLEEP")
+            time.sleep(3600)
+
         epoch_loss = []
         epoch_acc = []
         start_time = time.time()
@@ -151,7 +155,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--epochs', default=1, type=int)
+    parser.add_argument('--epochs', default=15, type=int)
     parser.add_argument('--batch_size', default=16, type=int)
     parser.add_argument('--lr', default=0.0001, type=float)
 
@@ -160,5 +164,3 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     main(args)
-    print("SLEEPING")
-    time.sleep(900)
