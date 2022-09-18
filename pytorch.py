@@ -102,8 +102,9 @@ def main(args):
     for epoch in range(epochs):
 
         if epoch == 12: # simulate idleness
-            print("NOW ENTERING INTO SLEEP")
-            time.sleep(3600)
+            # print("NOW ENTERING INTO SLEEP")
+            # time.sleep(3600)
+            raise Exception("THIS IS A TEST EXCEPTION")
 
         epoch_loss = []
         epoch_acc = []
