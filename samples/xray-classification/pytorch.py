@@ -1,5 +1,4 @@
 import argparse
-import io
 import time
 
 import numpy as np
@@ -43,8 +42,7 @@ class ImageDataset(Dataset):
 
         super().__init__()
         self.transforms = transforms
-        # self.imgs = glob.glob('./data/**')
-        self.imgs = st.list_files('s3://st-datasets/xray-dataset', pattern="**/*.jpeg", withdirs=False) # List files from S3 or any other source
+        self.imgs = glob.glob("/mnt/xray-dataset/**/*")
         self.imgs = self.imgs[:100] # Just for quick demonstration
 
     def __getitem__(self, idx):
@@ -52,9 +50,7 @@ class ImageDataset(Dataset):
         image_name = self.imgs[idx]
         print(f'Downloading {image_name}')
         
-        with st.open(f's3://{image_name}', 'rb') as file:
-            img = Image.open(io.BytesIO(file.read()))
-
+        img = Image.open(st.file(image_name))
         img = img.resize((224, 224)).convert('RGB')
 
         # Preparing class label
@@ -119,6 +115,7 @@ def main(args):
             # Calculating Loss
             _loss = criterion(preds, labels)
             loss = _loss.item()
+
             epoch_loss.append(loss)
 
             # Calculating Accuracy
@@ -128,6 +125,12 @@ def main(args):
             # Backward
             _loss.backward()
             optimizer.step()
+
+            # Track metrics
+            st.track(epoch=epoch, 
+                    metrics={'loss' : loss, 'acc' : acc}, 
+                    tuner_default='loss')
+        
         
         end_time = time.time()
         total_time = end_time - start_time
@@ -138,13 +141,10 @@ def main(args):
         writer.add_scalar('loss', loss, epoch)
         writer.add_scalar('acc', acc, epoch)
 
-
         st.torch.save(model.state_dict(), "model.pth", metadata={'epoch' : 5, 'loss': loss, 'acc' : acc})
         
         print(f"Epoch: {epoch + 1} | Loss: {loss} | Acc: {acc} | Time: {total_time} ")
-        st.track(epoch=epoch, 
-                    metrics={'loss' : loss, 'acc' : acc}, 
-                    tuner_default='loss')
+        
 
 
     writer.close()
