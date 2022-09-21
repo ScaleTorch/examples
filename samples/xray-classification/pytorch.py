@@ -54,7 +54,8 @@ class ImageDataset(Dataset):
         img = img.resize((224, 224)).convert('RGB')
 
         # Preparing class label
-        _, __, label_name, image = image_name.split('/')
+        parts = image_name.split('/')
+        label_name = parts[-2]
         label = 1 if label_name == 'NORMAL' else 0
         label = torch.tensor(label, dtype=torch.float32)
 
