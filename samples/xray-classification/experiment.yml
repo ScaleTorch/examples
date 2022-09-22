@@ -46,11 +46,8 @@ cloudProviders:
     regions:
     - FIN1
 
-  - name: GCP
-    regions:
-    - us-central1
-    - europe-west4
-    - asia-east1
+virtualMounts:
+  - name: xray-dataset
   
 # Maximum cost in USD that the experiment cannot go beyond - [Optional]
 maxCost: 50

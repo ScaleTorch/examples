@@ -33,6 +33,15 @@ tuning:
     optimizeMode: maximize     
 
 
+# Specify what datasets are to be mounted to the workstation
+# VirtualMounts need to be created using the web app
+virtualMounts:
+  - name: xray-dataset
+    dest: /mnt/xray-dataset
+  
+  - name: image-dataset
+    unravelArchives: True
+
 # A custom docker image to use with pre-built dependencies - [Optional]
 # Note: The working directory of the docker image should contain the entrypoint and requirements specified above
 customImage: 

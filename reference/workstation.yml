@@ -6,7 +6,7 @@
 # name: my-workstation
 
 # Name of the requirements file - [Optional]
-requirements: requirements.txt
+# requirements: requirements.txt
 
 # Number of GPUs needed in a workstation - [Default=0]
 gpuCount: 1
@@ -48,6 +48,15 @@ numWorkstations: 1
 
 # Choose type of visualisation between TENSORBOARD and AIM - [Optional]
 visualisation: TENSORBOARD
+
+# Specify what datasets are to be mounted to the workstation
+# VirtualMounts need to be created using the web app
+virtualMounts:
+  - name: xray-dataset
+    dest: /mnt/xray-dataset
+  
+  - name: image-dataset
+    unravelArchives: True
 
 # List of commands that need to be run in the workstation before it is made available to use - [Optional]
 # Note: Please avoid "sudo" in the commands

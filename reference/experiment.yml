@@ -84,6 +84,14 @@ gpuTypes:
   - V100
   - K80
 
+# Specify what datasets are to be mounted to the workstation
+# VirtualMounts need to be created using the web app
+virtualMounts:
+  - name: xray-dataset
+    dest: /mnt/xray-dataset
+  
+  - name: image-dataset
+    unravelArchives: True
 
 # Choose type of visualisation between TENSORBOARD and AIM - [Optional]
 visualisation:
