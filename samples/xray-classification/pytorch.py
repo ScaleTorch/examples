@@ -1,4 +1,5 @@
 import argparse
+import os
 import time
 
 import numpy as np
@@ -161,4 +162,5 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     print(args)
-    main(args)
+    print(os.environ)
+    # main(args)
