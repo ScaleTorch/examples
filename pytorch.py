@@ -52,8 +52,12 @@ class ImageDataset(Dataset):
         image_name = self.imgs[idx]
         print(f'Downloading {image_name}')
         
-        with st.open(f's3://{image_name}', 'rb') as file:
-            img = Image.open(io.BytesIO(file.read()))
+        # With st.open
+        # with st.open(f's3://{image_name}', 'rb') as file:
+        #     img = Image.open(io.BytesIO(file.read()))
+
+        # With st.file
+        img = Image.open(st.file(f"s3://{image_name}"))
 
         img = img.resize((224, 224)).convert('RGB')
 
