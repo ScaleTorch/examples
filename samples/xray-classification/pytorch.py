@@ -13,7 +13,9 @@ from tqdm import tqdm
 import glob
 
 
-
+# Import scaletorch and intialize
+import scaletorch as st
+st.init()
 
 
 def get_train_transform():
@@ -40,7 +42,7 @@ class ImageDataset(Dataset):
 
         super().__init__()
         self.transforms = transforms
-        self.imgs = glob.glob("/mnt/xray-dataset/**/*")
+        self.imgs = st.list_files("s3://st-datasets/xray-dataset", filter="**/*.jpeg")
         self.imgs = self.imgs[:100] # Just for quick demonstration
 
     def __getitem__(self, idx):
@@ -48,7 +50,7 @@ class ImageDataset(Dataset):
         image_name = self.imgs[idx]
         print(f'Downloading {image_name}')
         
-        img = Image.open(image_name)
+        img = Image.open(st.file(image_name))
         img = img.resize((224, 224)).convert('RGB')
 
         # Preparing class label
@@ -68,7 +70,7 @@ class ImageDataset(Dataset):
 def main(args):
     train_dataset = ImageDataset(transforms=get_train_transform())
 
-    train_data_loader = DataLoader(
+    train_data_loader = st.torch.DataLoader(
         dataset=train_dataset,
         num_workers=4,
         batch_size=args.batch_size,
@@ -100,36 +102,37 @@ def main(args):
         epoch_acc = []
         start_time = time.time()
 
-        for images, labels in tqdm(train_data_loader):
-            images = images.to(device)
-            labels = labels.to(device)
-            labels = labels.reshape((labels.shape[0], 1))  # [N, 1] - to match with preds shape
+        if st.pre_process_run():
+            for images, labels in tqdm(train_data_loader):
+                images = images.to(device)
+                labels = labels.to(device)
+                labels = labels.reshape((labels.shape[0], 1))  # [N, 1] - to match with preds shape
 
-            # Reseting Gradients
-            optimizer.zero_grad()
+                # Reseting Gradients
+                optimizer.zero_grad()
 
-            # Forward
-            preds = model(images)
+                # Forward
+                preds = model(images)
 
-            # Calculating Loss
-            _loss = criterion(preds, labels)
-            loss = _loss.item()
+                # Calculating Loss
+                _loss = criterion(preds, labels)
+                loss = _loss.item()
 
-            epoch_loss.append(loss)
+                epoch_loss.append(loss)
 
-            # Calculating Accuracy
-            acc = accuracy(preds, labels)
-            epoch_acc.append(acc)
+                # Calculating Accuracy
+                acc = accuracy(preds, labels)
+                epoch_acc.append(acc)
 
-            # Backward
-            _loss.backward()
-            optimizer.step()
+                # Backward
+                _loss.backward()
+                optimizer.step()
 
-            # Track metrics
-            st.track(epoch=epoch, 
-                    metrics={'loss' : loss, 'acc' : acc}, 
-                    tuner_default='loss')
-        
+                # Track metrics
+                st.track(epoch=epoch, 
+                        metrics={'loss' : loss, 'acc' : acc}, 
+                        tuner_default='loss')
+            
         
         end_time = time.time()
         total_time = end_time - start_time
