@@ -70,7 +70,7 @@ class ImageDataset(Dataset):
 def main(args):
     train_dataset = ImageDataset(transforms=get_train_transform())
 
-    train_data_loader = st.torch.DataLoader(
+    train_data_loader = DataLoader(
         dataset=train_dataset,
         num_workers=4,
         batch_size=args.batch_size,
@@ -93,13 +93,10 @@ def main(args):
     criterion = nn.BCELoss()
     epochs = args.epochs
     model.to(device)
-    model = st.torch.DistributedDataParallel(model, optimizer, lr_scheduler)
-
-    st.init_training(dataloaders=[train_data_loader])
 
     writer = SummaryWriter(f'tensorboard')
     print('Training has begun...')
-    for epoch in st.epoch_wrapper(range(epochs)):
+    for epoch in range(epochs):
 
         epoch_loss = []
         epoch_acc = []
@@ -140,11 +137,7 @@ def main(args):
         writer.add_scalar('loss', loss, epoch)
         writer.add_scalar('acc', acc, epoch)
 
-        st.track(epoch=epoch, {"loss" : loss, "acc" : acc})
-        loss_sync = st.get_sync_metrics("loss")
-        acc_sync = st.get_sync_metrics("acc")
-
-        print(f"Epoch: {epoch + 1} | Loss: {loss_sync} | Acc: {acc_sync} | Time: {total_time} ")
+        print(f"Epoch: {epoch + 1} | Loss: {loss} | Acc: {acc} | Time: {total_time} ")
         
 
     writer.close()
