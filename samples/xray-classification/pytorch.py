@@ -13,6 +13,9 @@ from tqdm import tqdm
 import glob
 
 
+# Import scaletorch and intialize
+import scaletorch as st
+st.init()
 
 
 def get_train_transform():
@@ -47,7 +50,7 @@ class ImageDataset(Dataset):
         image_name = self.imgs[idx]
         print(f'Downloading {image_name}')
         
-        img = Image.open(image_name)
+        img = Image.open(st.file(image_name))
         img = img.resize((224, 224)).convert('RGB')
 
         # Preparing class label
@@ -67,7 +70,7 @@ class ImageDataset(Dataset):
 def main(args):
     train_dataset = ImageDataset(transforms=get_train_transform())
 
-    train_data_loader = DataLoader(
+    train_data_loader = st.torch.DataLoader(
         dataset=train_dataset,
         num_workers=4,
         batch_size=args.batch_size,
@@ -91,9 +94,11 @@ def main(args):
     epochs = args.epochs
     model.to(device)
 
-    print('Training has begun...')
+    st.init_training(dataloaders=[train_data_loader])
+
     writer = SummaryWriter(f'tensorboard')
-    for epoch in range(epochs):
+    print('Training has begun...')
+    for epoch in st.epoch_wrapper(range(epochs)):
 
         epoch_loss = []
         epoch_acc = []
