@@ -93,6 +93,7 @@ def main(args):
     criterion = nn.BCELoss()
     epochs = args.epochs
     model.to(device)
+    model = st.torch.DistributedDataParallel(model, optimizer, lr_scheduler)
 
     st.init_training(dataloaders=[train_data_loader])
 
@@ -139,7 +140,11 @@ def main(args):
         writer.add_scalar('loss', loss, epoch)
         writer.add_scalar('acc', acc, epoch)
 
-        print(f"Epoch: {epoch + 1} | Loss: {loss} | Acc: {acc} | Time: {total_time} ")
+        st.track(epoch=epoch, {"loss" : loss, "acc" : acc})
+        loss_sync = st.get_sync_metrics("loss")
+        acc_sync = st.get_sync_metrics("acc")
+
+        print(f"Epoch: {epoch + 1} | Loss: {loss_sync} | Acc: {acc_sync} | Time: {total_time} ")
         
 
     writer.close()
