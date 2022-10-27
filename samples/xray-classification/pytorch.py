@@ -128,9 +128,9 @@ def main(args):
             optimizer.step()
 
             # Track metrics
-            st.track(epoch=epoch, 
-                    metrics={'loss' : loss, 'acc' : acc}, 
-                    tuner_default='loss')
+            # st.track(epoch=epoch, 
+            #         metrics={'loss' : loss, 'acc' : acc}, 
+            #         tuner_default='loss')
         
         
         end_time = time.time()
