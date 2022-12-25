@@ -15,7 +15,7 @@ import glob
 
 # Import scaletorch and intialize
 import scaletorch as st
-st.init(gt2_override=True, use_dapp=True, torch_rng_seed=None)
+st.init(gt2_override=True, use_dapp=True) # DAPP CHANGE
 
 
 
@@ -44,7 +44,7 @@ class ImageDataset(Dataset):
         super().__init__()
         self.transforms = transforms
         self.imgs = glob.glob("/mnt/xray-dataset/**/*")
-        self.imgs = self.imgs # Just for quick demonstration
+        self.imgs = self.imgs
 
     def __getitem__(self, idx):
         
@@ -71,7 +71,7 @@ class ImageDataset(Dataset):
 def main(args):
     train_dataset = ImageDataset(transforms=get_train_transform())
 
-    train_data_loader =  st.torch.dapp.DataLoader(
+    train_data_loader =  st.torch.dapp.DataLoader(  # DAPP CHANGE
         dataset=train_dataset,
         num_workers=4,
         batch_size=args.batch_size,
@@ -95,11 +95,11 @@ def main(args):
     epochs = args.epochs
     model.to(device)
 
-    st.torch.dapp.init_training(train_loader, test_loader)  # type: ignore
+    st.torch.dapp.init_training(dataloaders=[train_loader], epochs=epochs)  # type: ignore # DAPP CHANGE
 
     print('Training has begun...')
     writer = SummaryWriter(f'{st.get_artifacts_dir()}/tensorboard')
-    for epoch in st.torch.dapp.epoch_wrapper(range(1, epochs + 1)):
+    for epoch in range(1, epochs + 1):
 
         epoch_loss = []
         epoch_acc = []
