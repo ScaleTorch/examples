@@ -45,7 +45,7 @@ class ImageDataset(Dataset):
         super().__init__()
         self.transforms = transforms
         self.imgs = glob.glob("/mnt/xray-dataset/**/*")
-        self.imgs = self.imgs * 1e2  # Just for quick demonstration
+        self.imgs = self.imgs * 100  # Just for quick demonstration
         print(f"Number of images: {len(self.imgs)}")
 
     def __getitem__(self, idx):
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr", default=0.0001, type=float, required=True)
     args = parser.parse_args()
 
-    wandb.init(project="dapp-mlds", config=dict(args), name=st.get_trial_id())
+    wandb.init(project="dapp-mlds", name=st.get_trial_id())
 
     print(args)
     main(args)
