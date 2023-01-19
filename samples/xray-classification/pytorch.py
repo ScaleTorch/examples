@@ -24,6 +24,8 @@ def get_train_transform():
             t.RandomRotation(15),
             t.RandomCrop(204),
             t.ToTensor(),
+            t.GaussianBlur(3),
+            t.RandomAdjustSharpness(1),
             t.Normalize((0, 0, 0), (1, 1, 1)),
         ]
     )
