@@ -94,7 +94,6 @@ def main(args):
     for epoch in range(epochs):
 
         epoch_loss = []
-        epoch_acc = []
         start_time = time.time()
 
         for images, labels in tqdm(train_data_loader):
@@ -111,12 +110,7 @@ def main(args):
             # Calculating Loss
             _loss = criterion(preds, labels)
             loss = _loss.item()
-
             epoch_loss.append(loss)
-
-            # Calculating Accuracy
-            acc = accuracy(preds, labels)
-            epoch_acc.append(acc)
 
             # Backward
             _loss.backward()
@@ -131,9 +125,8 @@ def main(args):
         total_time = end_time - start_time
 
         loss = np.mean(epoch_loss)
-        acc = np.mean(epoch_acc)
 
-        print(f"Epoch: {epoch + 1} | Loss: {loss} | Acc: {acc} | Time: {total_time} ")
+        print(f"Epoch: {epoch + 1} | Loss: {loss} | Time: {total_time} ")
 
 
 if __name__ == "__main__":
