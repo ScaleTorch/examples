@@ -9,7 +9,7 @@ import torch.nn as nn
 import torchvision.transforms as t
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
-from torchvision.models import resnet18
+from torchvision.models import resnet50
 from tqdm import tqdm
 import glob
 
@@ -82,13 +82,13 @@ def main(args):
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
 
-    model = resnet18(pretrained=True)
-    model.fc = nn.Sequential(nn.Linear(512, 1, bias=True), nn.Sigmoid())
+    model = resnet50(pretrained=True)
+    model.fc = nn.Sequential(nn.Linear(2048, 1, bias=True), nn.Sigmoid())
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     criterion = nn.BCELoss()
     epochs = args.epochs
-    model.to(device)
+    model = torch.nn.DataParallel(model).to(device)
 
     print("Training has begun...")
     for epoch in range(epochs):
