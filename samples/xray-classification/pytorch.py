@@ -13,11 +13,6 @@ from tqdm import tqdm
 import glob
 
 
-# Import scaletorch and intialize
-import scaletorch as st
-st.init()
-
-
 def get_train_transform():
     return t.Compose([
         t.RandomHorizontalFlip(p=0.5),
@@ -50,7 +45,7 @@ class ImageDataset(Dataset):
         image_name = self.imgs[idx]
         print(f'Downloading {image_name}')
         
-        img = Image.open(st.file(image_name))
+        img = Image.open(image_name)
         img = img.resize((224, 224)).convert('RGB')
 
         # Preparing class label
@@ -95,7 +90,7 @@ def main(args):
     model.to(device)
 
     print('Training has begun...')
-    writer = SummaryWriter(f'{st.get_artifacts_dir()}/tensorboard')
+    writer = SummaryWriter('tensorboard')
     for epoch in range(epochs):
 
         epoch_loss = []
@@ -142,8 +137,6 @@ def main(args):
         writer.add_scalar('loss', loss, epoch)
         writer.add_scalar('acc', acc, epoch)
 
-        st.torch.save(model.state_dict(), "model.pth", metadata={'epoch' : 5, 'loss': loss, 'acc' : acc})
-        
         print(f"Epoch: {epoch + 1} | Loss: {loss} | Acc: {acc} | Time: {total_time} ")
         
 
