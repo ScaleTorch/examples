@@ -8,7 +8,6 @@ import torchvision.transforms as t
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from torchvision.models import resnet50
-from tqdm import tqdm
 import glob
 
 
@@ -18,7 +17,11 @@ def get_train_transform():
     return t.Compose([
         t.RandomHorizontalFlip(p=0.5),
         t.RandomRotation(15),
+        t.RandomHorizontalFlip(p=0.5),
+        t.RandomRotation(15),
+        t.GaussianBlur(3),
         t.RandomCrop(204),
+        t.RandomInvert(),
         t.ToTensor(),
         t.Normalize((0, 0, 0), (1, 1, 1))
     ])
@@ -39,7 +42,7 @@ class ImageDataset(Dataset):
         super().__init__()
         self.transforms = transforms
         self.imgs = glob.glob("/mnt/xray-dataset/**/*")
-        self.imgs = self.imgs
+        self.imgs = self.imgs * 30
 
     def __getitem__(self, idx):
         
@@ -96,7 +99,7 @@ def main(args):
         epoch_acc = []
         start_time = time.time()
 
-        for images, labels in tqdm(train_data_loader):
+        for images, labels in train_data_loader:
             images = images.to(device)
             labels = labels.to(device)
             labels = labels.reshape((labels.shape[0], 1))  # [N, 1] - to match with preds shape
