@@ -13,10 +13,6 @@ from tqdm import tqdm
 import glob
 
 
-# Import scaletorch and intialize
-import scaletorch as st
-st.init(gt2_override=True, use_dapp=True) # DAPP CHANGE
-
 
 
 def get_train_transform():
@@ -49,9 +45,8 @@ class ImageDataset(Dataset):
     def __getitem__(self, idx):
         
         image_name = self.imgs[idx]
-        print(f'Downloading {image_name}')
         
-        img = Image.open(st.file(image_name))
+        img = Image.open(image_name)
         img = img.resize((224, 224)).convert('RGB')
 
         # Preparing class label
@@ -71,7 +66,7 @@ class ImageDataset(Dataset):
 def main(args):
     train_dataset = ImageDataset(transforms=get_train_transform())
 
-    train_data_loader =  st.torch.dapp.DataLoader(  # DAPP CHANGE
+    train_data_loader = DataLoader(  # DAPP CHANGE
         dataset=train_dataset,
         num_workers=4,
         batch_size=args.batch_size,
@@ -95,10 +90,7 @@ def main(args):
     epochs = args.epochs
     model.to(device)
 
-    st.torch.dapp.init_training(dataloaders=[train_loader], epochs=epochs)  # type: ignore # DAPP CHANGE
-
     print('Training has begun...')
-    writer = SummaryWriter(f'{st.get_artifacts_dir()}/tensorboard')
     for epoch in range(1, epochs + 1):
 
         epoch_loss = []
@@ -132,9 +124,9 @@ def main(args):
 
 
         # Track metrics
-        st.track(epoch=epoch, 
-                metrics={'loss' : loss, 'acc' : acc}, 
-                tuner_default='loss')
+        # st.track(epoch=epoch, 
+        #         metrics={'loss' : loss, 'acc' : acc}, 
+        #         tuner_default='loss')
         
         
         end_time = time.time()
@@ -143,16 +135,16 @@ def main(args):
         loss = np.mean(epoch_loss)
         acc = np.mean(epoch_acc)
 
-        writer.add_scalar('loss', loss, epoch)
-        writer.add_scalar('acc', acc, epoch)
+        # writer.add_scalar('loss', loss, epoch)
+        # writer.add_scalar('acc', acc, epoch)
 
-        st.torch.save(model.state_dict(), "model.pth", metadata={'epoch' : 5, 'loss': loss, 'acc' : acc})
+        # st.torch.save(model.state_dict(), "model.pth", metadata={'epoch' : 5, 'loss': loss, 'acc' : acc})
         
         print(f"Epoch: {epoch + 1} | Loss: {loss} | Acc: {acc} | Time: {total_time} ")
         
 
 
-    writer.close()
+    # writer.close()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
