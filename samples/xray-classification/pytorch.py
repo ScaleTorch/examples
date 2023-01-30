@@ -42,7 +42,7 @@ class ImageDataset(Dataset):
         super().__init__()
         self.transforms = transforms
         self.imgs = glob.glob("/mnt/xray-dataset/**/*")
-        self.imgs = self.imgs * 30
+        self.imgs = self.imgs
 
     def __getitem__(self, idx):
         
@@ -73,7 +73,7 @@ def main(args):
         num_workers=4,
         batch_size=args.batch_size,
         shuffle=True,
-        prefetch_factor=1
+        prefetch_factor=2
     )
 
     use_cuda = torch.cuda.is_available()
@@ -153,9 +153,6 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', default=1, type=int, required=True)
     parser.add_argument('--batch_size', default=16, type=int, required=True)
     parser.add_argument('--lr', default=0.0001, type=float, required=True)
-
-    parser.add_argument('--no_cuda', action='store_true', default=True,
-                        help='disables CUDA training')
 
     args = parser.parse_args()
     print(args)
