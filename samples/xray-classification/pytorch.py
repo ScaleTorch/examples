@@ -7,7 +7,6 @@ import torch.nn as nn
 import torchvision.transforms as t
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
-from torch.utils.tensorboard import SummaryWriter
 from torchvision.models import resnet50
 from tqdm import tqdm
 import glob
