@@ -145,9 +145,9 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--epochs', default=1, type=int, required=True)
-    parser.add_argument('--batch_size', default=16, type=int, required=True)
-    parser.add_argument('--lr', default=0.0001, type=float, required=True)
+    parser.add_argument('--epochs', default=100000, type=int, required=False)
+    parser.add_argument('--batch_size', default=16, type=int, required=False)
+    parser.add_argument('--lr', default=0.0001, type=float, required=False)
 
     parser.add_argument('--no_cuda', action='store_true', default=True,
                         help='disables CUDA training')
