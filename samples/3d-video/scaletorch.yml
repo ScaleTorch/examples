@@ -1,0 +1,47 @@
+cuda: 11.6
+useSpot: false
+
+cloudProviders:
+  - name: GCP
+    regions:
+      - us-central1
+      - europe-west4
+      - asia-east1
+      - us-west1
+
+gpuTypes:
+  - A100
+
+minvCPUs: 8
+minMemory: 8
+gpusPerTrial: 4
+pythonVersion: "3.8"
+
+environment:
+  ST_PLATFORM_API: https://dev-api.storch-api.com
+
+entrypoint: video_model_pod.py --epochs 100
+requirements: reqs.txt
+
+codeTransfer:
+  type: GITHUB
+  repo: https://github.com/ScaleTorch/examples.git
+  ref: main
+  codeDir: samples/3d-video
+
+preJobCommands:
+  - apt-get update -y
+  - apt-get install unzip -y
+  - wget
+    https://ai2-public-datasets.s3-us-west-2.amazonaws.com/charades/Charades.zip
+  - unzip Charades.zip
+  - mv Charades /mnt/Charades
+
+useDAPP: true
+dapp:
+  epochs: 100
+
+virtualMounts:
+  - src: https://ai2-public-datasets.s3-us-west-2.amazonaws.com/charades/Charades_v1_480.zip
+    dest: /mnt/video-dataset
+    name: video-dataset
