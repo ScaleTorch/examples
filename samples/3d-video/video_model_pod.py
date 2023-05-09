@@ -45,8 +45,9 @@ opts = Namespace(**GLOBAL_ARGS)
 device_name = 'cpu'
 if torch.cuda.is_available():
     device_name = torch.cuda.get_device_name()
-
-run_name = f"DP-{opts.project_name}-bs-{opts.batch_size}-{torch.cuda.get_device_name()}x-{torch.cuda.device_count()}-pf-{opts.prefetch_factor}-num_workers-{opts.num_workers}"
+    run_name = f"DP-{opts.project_name}-bs-{opts.batch_size}-{torch.cuda.get_device_name()}x-{torch.cuda.device_count()}-pf-{opts.prefetch_factor}-num_workers-{opts.num_workers}"
+else:
+    run_name = f"DP-{opts.project_name}-bs-{opts.batch_size}-pf-{opts.prefetch_factor}-num_workers-{opts.num_workers}"
 
 side_size = 256
 mean = [0.45, 0.45, 0.45]
