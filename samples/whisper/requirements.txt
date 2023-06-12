@@ -1,0 +1,11 @@
+--index-url https://download.pytorch.org/whl/cu118
+datasets
+transformers
+evaluate
+jiwer
+gradio
+soundfile
+tensorboard
+torch
+torchvision
+torchaudio
