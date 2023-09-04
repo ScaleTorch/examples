@@ -1,4 +1,5 @@
 import argparse
+import os
 from transformers import WhisperFeatureExtractor
 from transformers import WhisperTokenizer
 from transformers import WhisperProcessor
@@ -11,12 +12,13 @@ from datasets import Audio
 
 from torch.utils.data import Dataset, DataLoader
 import torchaudio
+import numpy as np
 import torch 
+from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
 import wandb
-from argparse import Namespace
 from dataclasses import dataclass
 from typing import Any, Dict, List, Union
-
+from argparse import Namespace
 
 class Data(Dataset):
   def __init__(self, ds, feature_extractor, tokenizer, opts):
@@ -28,7 +30,6 @@ class Data(Dataset):
   def __len__(self):
     return self.opts.dataset_sz
 
-
   def __getitem__(self, idx):
     if self.opts.dapp:
         batch = {}
@@ -39,8 +40,9 @@ class Data(Dataset):
     row = self.ds[idx % len(self.ds)]
     
     waveform = torch.Tensor(row['audio']['array'])
-    features = feature_extractor(waveform, sampling_rate=row['audio']["sampling_rate"]).input_features[0]
-    labels = tokenizer(row["sentence"]).input_ids
+    features = self.feature_extractor(waveform, sampling_rate=row['audio']["sampling_rate"]).input_features[0]
+    labels = self,tokenizer(row["sentence"]).input_ids
+    
     batch = {}
     batch["input_features"] = features
     batch["labels"] = torch.tensor(labels)
@@ -75,12 +77,24 @@ class DataCollatorSpeechSeq2SeqWithPadding:
         return batch
 
 
+def compute_metrics(p):
+    pred, labels = p
+    pred = np.argmax(pred, axis=1)
+
+    accuracy = accuracy_score(y_true=labels, y_pred=pred)
+    recall = recall_score(y_true=labels, y_pred=pred)
+    precision = precision_score(y_true=labels, y_pred=pred)
+    f1 = f1_score(y_true=labels, y_pred=pred)
+
+    return {"accuracy": accuracy, "precision": precision, "recall": recall, "f1": f1}
+
+
 def main(opts):
 
     # Dataset prep
-    feature_extractor = WhisperFeatureExtractor.from_pretrained("openai/whisper-small")
-    tokenizer = WhisperTokenizer.from_pretrained("openai/whisper-small", language="Hindi", task="transcribe")
-    processor = WhisperProcessor.from_pretrained("openai/whisper-small", language="Hindi", task="transcribe")
+    feature_extractor = WhisperFeatureExtractor.from_pretrained(opts.model_type)
+    tokenizer = WhisperTokenizer.from_pretrained(opts.model_type, language="English", task="transcribe")
+    processor = WhisperProcessor.from_pretrained(opts.model_type, language="English", task="transcribe")
 
     common_voice = DatasetDict()
 
@@ -99,23 +113,27 @@ def main(opts):
    
     data_collator = DataCollatorSpeechSeq2SeqWithPadding(processor=processor)
 
-
     # Model and Trainer
-    model = WhisperForConditionalGeneration.from_pretrained(f"openai/whisper-medium")
+    model = WhisperForConditionalGeneration.from_pretrained(opts.model_type)
     model.config.forced_decoder_ids = None
     model.config.suppress_tokens = []
 
+    if opts.freeze_layers:
+       for name, param in model.named_parameters():
+            if 'classifier' not in name: # classifier layer
+                param.requires_grad = False
+
     training_args = Seq2SeqTrainingArguments(
-        output_dir="./whisper-small-hi",  # change to a repo name of your choice
+        output_dir=os.environ["ST_ARTIFACTS_DIR"],  
         per_device_train_batch_size=opts.batch_size,
         dataloader_num_workers=opts.num_workers,
-        gradient_accumulation_steps=1,  # increase by 2x for every 2x decrease in batch size
+        gradient_accumulation_steps=1,  
         learning_rate=1e-5,
         warmup_steps=500,
         num_train_epochs=opts.epochs,
         gradient_checkpointing=False,
         fp16=True,
-        evaluation_strategy="no",
+        evaluation_strategy="steps",
         save_strategy='no',
         generation_max_length=225,
         logging_steps=25,
@@ -131,9 +149,10 @@ def main(opts):
         tokenizer=processor.feature_extractor,
     )
 
+    # W&B initalization
     wandb.init(
-        project="whisper-pulkit",
-        config=GLOBAL_ARGS.copy(),
+        project="whisper-benchmarks",
+        config=dict(opts).copy()
         name=run_name,
     )
 
@@ -148,6 +167,7 @@ if __name__ == "__main__":
     parser.add_argument('--num_workers', default=16, type=int, required=False)
     parser.add_argument('--dataset_sz', default=6540, type=int, required=False)
     parser.add_argument('--model_type', default="openai/whisper-small", type=str, required=False)
+    parser.add_argument('--freeze_layers', default=False, type=bool, required=False)
 
     opts = parser.parse_args()
 
