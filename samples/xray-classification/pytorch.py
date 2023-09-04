@@ -1,6 +1,6 @@
 import argparse
+import os
 import time
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -75,6 +75,7 @@ def main(args):
 
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
+    print(device)
 
     model = resnet50(pretrained=True)
 
@@ -83,15 +84,29 @@ def main(args):
         nn.Sigmoid()
     )
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
     criterion = nn.BCELoss()
     epochs = args.epochs
-    model.to(device)
+    start_epoch = 0
+
+    if "model.pth" in os.listdir(os.environ["ST_ARTIFACTS_DIR"]):
+        checkpoint = torch.load(os.environ["ST_ARTIFACTS_DIR"] + "/model.pth")
+
+        model.load_state_dict(checkpoint['model_state_dict'])
+
+        optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        model.to(device)
+
+        start_epoch = checkpoint['epoch'] + 1
+        print(f"Checkpoint found. Resuming training from epoch: {start_epoch}")
+
+    else:
+        optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+        model.to(device)
 
     print('Training has begun...')
     writer = SummaryWriter('tensorboard')
-    for epoch in range(epochs):
+    for epoch in range(start_epoch, epochs):
 
         epoch_loss = []
         epoch_acc = []
@@ -122,11 +137,6 @@ def main(args):
             _loss.backward()
             optimizer.step()
 
-            # Track metrics
-            # st.track(epoch=epoch, 
-            #         metrics={'loss' : loss, 'acc' : acc}, 
-            #         tuner_default='loss')
-        
         
         end_time = time.time()
         total_time = end_time - start_time
@@ -138,8 +148,14 @@ def main(args):
         writer.add_scalar('acc', acc, epoch)
 
         print(f"Epoch: {epoch + 1} | Loss: {loss} | Acc: {acc} | Time: {total_time} ")
-        
 
+        # Checkpoint
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss': loss,
+            }, os.environ["ST_ARTIFACTS_DIR"] + "/model.pth")
 
     writer.close()
 
