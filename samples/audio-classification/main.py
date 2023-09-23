@@ -139,14 +139,16 @@ def main(opts):
     resnet_model.conv1 = nn.Conv2d(2, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
     
     if torch.cuda.device_count() > 1:
-        resnet_model = torch.nn.DataParallel(resnet_model).to(device)
+        resnet_model = torch.nn.DataParallel(resnet_model)
+    
+    resnet_model = resnet_model.to(device)
 
     # -- optim, criterion & scaler
     optimizer = torch.optim.SGD(resnet_model.parameters(), lr=0.01)  # lightweight optimizer
     loss_fn = nn.CrossEntropyLoss()
     scaler = torch.cuda.amp.GradScaler()
 
-    # --- mock training
+    # --- training
     for _ in range(opts.epochs):
         resnet_model.train()
         skip_factor = 0  # Only start counting after a couple of batches
@@ -173,11 +175,11 @@ def main(opts):
             if torch.cuda.is_available():
                 with torch.cuda.amp.autocast(enabled=True, dtype=torch.float16):
                     y_hat = resnet_model(x)
-                    loss = loss_fn(y_hat, y)
             else:
                 y_hat = resnet_model(x)
-                loss = loss_fn(y_hat, y)                
 
+            loss = loss_fn(y_hat, y)                
+            
             scaler.scale(loss).backward()
             scaler.step(optimizer)
             scaler.update()
@@ -209,3 +211,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     main(args)
+
