@@ -10,18 +10,15 @@ cloudProviders:
       - us-west1
 
 gpuTypes:
-  - A100
+  - V100
 
-minvCPUs: 8
-minMemory: 8
+minvCPUs: 16
+minMemory: 32
 gpusPerTrial: 4
 pythonVersion: "3.8"
 
-environment:
-  ST_PLATFORM_API: https://dev-api.storch-api.com
-
-entrypoint: video_model_pod.py --epochs 100
-requirements: reqs.txt
+entrypoint: python3 video_model_pod.py --epochs 100 --batch_size 16
+requirements: requirements.txt
 
 codeTransfer:
   type: GITHUB
@@ -42,6 +39,9 @@ dapp:
   epochs: 100
 
 virtualMounts:
-  - src: https://ai2-public-datasets.s3-us-west-2.amazonaws.com/charades/Charades_v1_480.zip
-    dest: /mnt/video-dataset
-    name: video-dataset
+  - name: charades-video-dataset
+
+
+artifactsDestination:
+  name: s3-store
+
