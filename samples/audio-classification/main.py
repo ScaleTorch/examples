@@ -26,7 +26,7 @@ class ESC50Data(Dataset):
 
 
   def __len__(self):
-    return self.opts.dataset_sz
+    return self.opts.dataset_size
 
 
   def __getitem__(self, idx):
@@ -88,7 +88,7 @@ def main(opts):
     data_loader = DataLoader(
         dataset, 
         batch_size=opts.batch_size,
-        prefetch_factor=opts.prefetch_factor,
+        prefetch_factor=opts.pf,
         num_workers=opts.num_workers,
         shuffle=True,
         drop_last=True,
@@ -100,7 +100,7 @@ def main(opts):
     if torch.cuda.is_available():
         device_name = torch.cuda.get_device_name()
         
-    run_name = f"DP-bs-{opts.batch_size}-{device_name}x-{torch.cuda.device_count()}-pf-{opts.prefetch_factor}-num_workers-{opts.num_workers}"
+    run_name = f"DP-bs-{opts.batch_size}-{device_name}x-{torch.cuda.device_count()}-pf-{opts.pf}-num_workers-{opts.num_workers}"
     
     if "WANDB_API_KEY" in os.environ:
         import wandb
