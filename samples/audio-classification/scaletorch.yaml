@@ -1,0 +1,33 @@
+cuda: "11.6"
+
+cloudProviders:
+  - name: AWS
+    regions:
+      - us-east-1
+
+gpuTypes:
+  - V100
+
+minvCPUs: 16
+minMemory: 64
+gpusPerTrial: 4
+pythonVersion: "3.8"
+
+entrypoint: python3 main.py --batch_size=256 --num_workers=16 --epochs=70000 --resnet=18 --dataset_size=20000
+requirements: requirements.txt
+
+codeTransfer:
+  type: GITHUB
+  repo: https://github.com/ScaleTorch/examples.git
+  ref: main
+  codeDir: samples/audio-classification
+
+artifactsDestination:
+  name: s3-store
+
+preJobCommands:
+  - git clone https://github.com/karolpiczak/ESC-50.git /mnt/ESC-50
+
+useDAPP: true
+dapp:
+  epochs: 70000
