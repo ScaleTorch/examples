@@ -193,6 +193,7 @@ def main(opts):
 
 
         epoch_time = time.time() - epoch_time
+        print("> Epoch:", _)
         print("> Epoch time", epoch_time, "secs")
         print("> Average Throughput:", num_elements_processed / epoch_time, "samples/sec")
         print()
