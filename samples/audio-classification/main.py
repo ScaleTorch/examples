@@ -11,6 +11,8 @@ import pandas as pd
 import os
 import time
 
+torchaudio.set_audio_backend("sox_io")
+
 
 class ESC50Data(Dataset):
   def __init__(self, df, opts):
