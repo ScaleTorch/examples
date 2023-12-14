@@ -547,9 +547,13 @@ def main(opt, callbacks=Callbacks()):
         assert not opt.evolve, f'--evolve {msg}'
         assert opt.batch_size != -1, f'AutoBatch with --batch-size -1 {msg}, please pass a valid --batch-size'
         assert opt.batch_size % WORLD_SIZE == 0, f'--batch-size {opt.batch_size} must be multiple of WORLD_SIZE'
-        assert torch.cuda.device_count() > LOCAL_RANK, 'insufficient CUDA devices for DDP command'
-        torch.cuda.set_device(LOCAL_RANK)
-        device = torch.device('cuda', LOCAL_RANK)
+        if torch.cuda.is_available():
+            assert torch.cuda.device_count() > LOCAL_RANK, 'insufficient CUDA devices for DDP command'
+            torch.cuda.set_device(LOCAL_RANK)
+            device = torch.device('cuda', LOCAL_RANK)
+        else:
+            device = torch.device('cpu')
+
         dist.init_process_group(backend='nccl' if dist.is_nccl_available() else 'gloo',
                                 timeout=timedelta(seconds=10800))
 
